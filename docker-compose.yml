@@ -1,0 +1,36 @@
+version: '3.4'
+
+networks:
+  backend:
+
+services:
+  physicalpersonhandbookdb:
+    container_name: physicalpersonhandbook-db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Adminadmin123!
+    networks:
+      - backend
+    ports:
+      - 18001:1433  
+    volumes:
+      - ./data:/var/opt/mssql/data
+      - ./log:/var/opt/mssql/log
+      - ./secrets:/var/opt/mssql/secrets
+  physicalpersonhandbook:
+    container_name: physicalpersonhandbook
+    image: ${DOCKER_REGISTRY-}physicalpersonhandbook
+    build:
+      context: .
+      dockerfile: Physicalpersonhandbook/Dockerfile
+    ports:
+      - 8081:80
+    networks:
+      - backend
+    depends_on:
+      - physicalpersonhandbookdb
+    environment:
+      - DB_HOST=physicalpersonhandbookdb
+      - DB_NAME=HandbookDB
+      - DB_SA_PASSWORD=Adminadmin123!
